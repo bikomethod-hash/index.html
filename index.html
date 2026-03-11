@@ -1,121 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Athlete Performance Report</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: sans-serif; background: #f9fafb; min-height: 100vh; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:sans-serif;background:#f9fafb;min-height:100vh;}
+    .tab-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:transparent;color:#6b7280;}
+    .tab-btn.active{background:#fff;color:#111827;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+    .tab-content{display:none;} .tab-content.active{display:block;}
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script type="text/babel">
-    const { useState } = React;
-    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } = Recharts;
+  <div style="background:#111827;color:#fff;padding:24px 32px;">
+    <p style="font-size:11px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;">Athlete Performance Report</p>
+    <h1 style="font-size:22px;font-weight:700;">Karl</h1>
+    <p style="font-size:13px;color:#d1d5db;margin-top:4px;">Basketball &nbsp;·&nbsp; Dr. Kons</p>
+    <p style="font-size:11px;color:#6b7280;margin-top:6px;">11 March 2026</p>
+  </div>
 
-    const ATHLETE_NAME = "Karl";
-    const SPORT        = "Basketball";
-    const COACH_NAME   = "Dr. Kons";
-    const DATA         = [{"month":"Month 1","PIS":80,"PSS":65,"RAS":100,"CPTS":100},{"month":"Month 2","PIS":100,"PSS":68,"RAS":63,"CPTS":0},{"month":"Month 3","PIS":90,"PSS":100,"RAS":100,"CPTS":67},{"month":"Month 4","PIS":58,"PSS":78,"RAS":75,"CPTS":0},{"month":"Month 5","PIS":100,"PSS":82,"RAS":80,"CPTS":79},{"month":"Month 6","PIS":2,"PSS":100,"RAS":100,"CPTS":100}];
-    const CONCLUSIONS  = "";
+  <div style="max-width:860px;margin:0 auto;padding:32px 24px;">
+    <div style="display:flex;gap:4px;background:#e5e7eb;border-radius:10px;padding:4px;width:fit-content;margin-bottom:24px;">
+      <button class="tab-btn active" onclick="showTab('report',this)">Report</button>
+      <button class="tab-btn" onclick="showTab('conclusions',this)">✦ Conclusions</button>
+    </div>
 
-    const COLORS = { PIS: "#ef4444", PSS: "#3b82f6", RAS: "#10b981", CPTS: "#f59e0b" };
-    const METRIC_INFO = {
-      PIS:  { label: "Performance Interference Score", desc: "Measures subconscious interference during a game. Lower is better." },
-      PSS:  { label: "Pressure Stability Score",       desc: "Measures pressure, mistakes, and turnovers. Lower is better." },
-      RAS:  { label: "Role Alignment Score",           desc: "Measures misalignment with role assessment. Lower is better." },
-      CPTS: { label: "Coach Performance Trust Score",  desc: "Measures coach concern about athlete under pressure. Lower is better." },
-    };
-
-    function App() {
-      const [tab, setTab] = useState("report");
-      const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-      return (
-        <div style={{ minHeight:"100vh", background:"#f9fafb" }}>
-          <div style={{ background:"#111827", color:"#fff", padding:"24px 32px" }}>
-            <p style={{ fontSize:11, letterSpacing:2, color:"#9ca3af", marginBottom:8, textTransform:"uppercase" }}>Athlete Performance Report</p>
-            <h1 style={{ fontSize:22, fontWeight:700 }}>{ATHLETE_NAME}</h1>
-            <p style={{ fontSize:13, color:"#d1d5db", marginTop:4 }}>{SPORT} &nbsp;·&nbsp; {COACH_NAME}</p>
-            <p style={{ fontSize:11, color:"#6b7280", marginTop:6 }}>{today}</p>
-          </div>
-          <div style={{ maxWidth:860, margin:"0 auto", padding:"32px 24px" }}>
-            <div style={{ display:"flex", gap:4, background:"#e5e7eb", borderRadius:10, padding:4, width:"fit-content", marginBottom:24 }}>
-              {["report","conclusions"].map(t => (
-                <button key={t} onClick={() => setTab(t)} style={{
-                  padding:"8px 18px", borderRadius:8, border:"none", cursor:"pointer", fontSize:13, fontWeight:500,
-                  background: tab===t ? "#fff" : "transparent", color: tab===t ? "#111827" : "#6b7280",
-                  boxShadow: tab===t ? "0 1px 4px rgba(0,0,0,0.1)" : "none"
-                }}>
-                  {t === "conclusions" ? "✦ Conclusions" : "Report"}
-                </button>
-              ))}
-            </div>
-            {tab === "report" && (
-              <div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(160px, 1fr))", gap:12, marginBottom:24 }}>
-                  {Object.entries(METRIC_INFO).map(([k]) => {
-                    const vals = DATA.map(d => d[k]);
-                    const latest = vals[vals.length-1];
-                    const diff = latest - vals[0];
-                    return (
-                      <div key={k} style={{ background:"#fff", border:"2px solid "+COLORS[k], borderRadius:12, padding:"14px 16px" }}>
-                        <div style={{ fontSize:11, fontWeight:700, color:COLORS[k], marginBottom:4 }}>{k}</div>
-                        <div style={{ fontSize:24, fontWeight:700, color:"#111827" }}>{latest}</div>
-                        <div style={{ fontSize:12, fontWeight:600, color: diff<0 ? "#16a34a" : "#dc2626" }}>
-                          {diff >= 0 ? "▲" : "▼"} {Math.abs(diff)} pts
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={{ background:"#fff", borderRadius:12, border:"1px solid #e5e7eb", padding:24, marginBottom:20 }}>
-                  <p style={{ fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:1, marginBottom:16 }}>Score Trends Over Time</p>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={DATA} margin={{ top:5, right:20, left:0, bottom:5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="month" tick={{ fontSize:12 }} />
-                      <YAxis domain={[0,100]} tick={{ fontSize:12 }} />
-                      <Tooltip contentStyle={{ borderRadius:8, fontSize:13 }} />
-                      <Legend />
-                      <ReferenceLine y={50} stroke="#d1d5db" strokeDasharray="4 4" />
-                      {Object.keys(METRIC_INFO).map(k => (
-                        <Line key={k} type="monotone" dataKey={k} stroke={COLORS[k]} strokeWidth={2.5} dot={{ r:4 }} activeDot={{ r:6 }} />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                  <p style={{ fontSize:11, color:"#9ca3af", fontStyle:"italic", marginTop:8 }}>* All scores: lower = better performance</p>
-                </div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:12 }}>
-                  {Object.entries(METRIC_INFO).map(([k,{label,desc}]) => (
-                    <div key={k} style={{ background:"#fff", borderRadius:10, border:"1px solid #e5e7eb", padding:14, display:"flex", gap:10 }}>
-                      <div style={{ width:3, borderRadius:4, background:COLORS[k], flexShrink:0 }} />
-                      <div>
-                        <div style={{ fontSize:10, fontWeight:700, color:COLORS[k], textTransform:"uppercase" }}>{k}</div>
-                        <div style={{ fontSize:13, fontWeight:600, color:"#111827", margin:"2px 0" }}>{label}</div>
-                        <div style={{ fontSize:11, color:"#6b7280" }}>{desc}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {tab === "conclusions" && (
-              <div style={{ background:"#fff", borderRadius:12, border:"1px solid #e5e7eb", padding:24 }}>
-                <p style={{ fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:1, marginBottom:16 }}>Conclusions</p>
-                <div style={{ fontSize:14, color:"#374151", lineHeight:1.8, whiteSpace:"pre-line" }}>{CONCLUSIONS}</div>
-              </div>
-            )}
-          </div>
+    <div id="tab-report" class="tab-content active">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px;">
+        
+        <div style="background:#fff;border:2px solid #ef4444;border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;color:#ef4444;margin-bottom:4px;">PIS</div>
+          <div style="font-size:24px;font-weight:700;color:#111827;">100</div>
+          <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 20 pts</div>
         </div>
-      );
+        <div style="background:#fff;border:2px solid #3b82f6;border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:4px;">PSS</div>
+          <div style="font-size:24px;font-weight:700;color:#111827;">100</div>
+          <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 35 pts</div>
+        </div>
+        <div style="background:#fff;border:2px solid #10b981;border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;color:#10b981;margin-bottom:4px;">RAS</div>
+          <div style="font-size:24px;font-weight:700;color:#111827;">100</div>
+          <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 0 pts</div>
+        </div>
+        <div style="background:#fff;border:2px solid #f59e0b;border-radius:12px;padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:4px;">CPTS</div>
+          <div style="font-size:24px;font-weight:700;color:#111827;">100</div>
+          <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 0 pts</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:24px;margin-bottom:20px;">
+        <p style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Score Trends Over Time</p>
+        <canvas id="myChart" height="120"></canvas>
+        <p style="font-size:11px;color:#9ca3af;font-style:italic;margin-top:8px;">* All scores: lower = better performance</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        
+      <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
+        <div style="width:3px;border-radius:4px;background:#ef4444;flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;">PIS</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Performance Interference Score</div>
+          <div style="font-size:11px;color:#6b7280;">Measures subconscious interference during a game. Lower is better.</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
+        <div style="width:3px;border-radius:4px;background:#3b82f6;flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;">PSS</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Pressure Stability Score</div>
+          <div style="font-size:11px;color:#6b7280;">Measures pressure, mistakes, and turnovers. Lower is better.</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
+        <div style="width:3px;border-radius:4px;background:#10b981;flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#10b981;text-transform:uppercase;">RAS</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Role Alignment Score</div>
+          <div style="font-size:11px;color:#6b7280;">Measures misalignment with role assessment. Lower is better.</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
+        <div style="width:3px;border-radius:4px;background:#f59e0b;flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;">CPTS</div>
+          <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Coach Performance Trust Score</div>
+          <div style="font-size:11px;color:#6b7280;">Measures coach concern about athlete under pressure. Lower is better.</div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <div id="tab-conclusions" class="tab-content">
+      <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:24px;">
+        <p style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Conclusions</p>
+        <div style="font-size:14px;color:#374151;line-height:1.8;white-space:pre-line;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DATA = [{"month":"Month 1","PIS":80,"PSS":65,"RAS":100,"CPTS":100},{"month":"Month 2","PIS":99,"PSS":68,"RAS":63,"CPTS":0},{"month":"Month 3","PIS":90,"PSS":100,"RAS":100,"CPTS":67},{"month":"Month 4","PIS":58,"PSS":78,"RAS":75,"CPTS":0},{"month":"Month 5","PIS":100,"PSS":82,"RAS":80,"CPTS":79},{"month":"Month 6","PIS":100,"PSS":100,"RAS":100,"CPTS":100}];
+    const COLORS = { PIS:"#ef4444", PSS:"#3b82f6", RAS:"#10b981", CPTS:"#f59e0b" };
+    const labels = DATA.map(d => d.month);
+    const datasets = ["PIS","PSS","RAS","CPTS"].map(k => ({
+      label: k, data: DATA.map(d => d[k]),
+      borderColor: COLORS[k], backgroundColor: COLORS[k],
+      borderWidth: 2.5, pointRadius: 4, tension: 0.3, fill: false
+    }));
+    new Chart(document.getElementById("myChart"), {
+      type: "line",
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        scales: {
+          y: { min: 0, max: 100, grid: { color: "#f0f0f0" } },
+          x: { grid: { color: "#f0f0f0" } }
+        },
+        plugins: { legend: { position: "bottom" } }
+      }
+    });
+
+    function showTab(name, btn) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+      document.getElementById("tab-"+name).classList.add("active");
+      btn.classList.add("active");
     }
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 </body>
 </html>
