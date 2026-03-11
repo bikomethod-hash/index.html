@@ -3,115 +3,70 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Athlete Performance Report – Coach Name</title>
+  <title>Athlete Performance Report</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Segoe UI',sans-serif;background:#f1f5f9;min-height:100vh;}
-
-    .hero{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);color:#fff;padding:36px 32px 40px;}
-    .hero-label{font-size:10px;letter-spacing:3px;color:#94a3b8;text-transform:uppercase;margin-bottom:10px;}
-    .hero-name{font-size:28px;font-weight:800;letter-spacing:-0.5px;}
-    .hero-sub{font-size:14px;color:#94a3b8;margin-top:6px;}
-    .hero-date{font-size:11px;color:#475569;margin-top:8px;}
-
-    .container{max-width:900px;margin:0 auto;padding:28px 20px 60px;}
-
-    .tabs{display:flex;gap:4px;background:#e2e8f0;border-radius:12px;padding:4px;width:fit-content;margin-bottom:28px;}
-    .tab-btn{padding:9px 20px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:600;background:transparent;color:#64748b;transition:all 0.2s;}
-    .tab-btn.active{background:#fff;color:#0f172a;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
-    .tab-content{display:none;} .tab-content.active{display:block;}
-
-    .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
-    .metric-card{background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-
-    .chart-card{background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:24px;margin-bottom:20px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-    .chart-card h3{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:18px;}
-    .chart-wrap{position:relative;width:100%;overflow:hidden;}
-
-    .desc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
-
-    .data-table-wrap{background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-    .data-table-wrap h3{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
-    .data-table-wrap table{width:100%;border-collapse:collapse;font-size:14px;}
-    .data-table-wrap thead tr{background:#f8fafc;}
-    .data-table-wrap th{padding:10px 14px;text-align:center;border-bottom:2px solid #e2e8f0;font-size:12px;font-weight:700;}
-    .data-table-wrap th:first-child{text-align:left;}
-    .data-table-wrap td{padding:10px 14px;text-align:center;border-bottom:1px solid #f1f5f9;font-size:14px;}
-    .data-table-wrap td:first-child{text-align:left;font-weight:600;color:#374151;}
-    .data-table-wrap tr:last-child td{border-bottom:none;}
-    .data-table-wrap tr:hover td{background:#f8fafc;}
-
-    .conclusions-card{background:#fff;border-radius:14px;border:1px solid #e2e8f0;padding:28px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
-    .conclusions-card h3{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
-    .conclusions-card p{font-size:15px;color:#374151;line-height:1.9;white-space:pre-line;}
-
-    @media(max-width:640px){
-      .hero{padding:24px 20px 28px;}
-      .hero-name{font-size:22px;}
-      .metrics-grid{grid-template-columns:repeat(2,1fr);}
-      .desc-grid{grid-template-columns:1fr;}
-      .tabs{width:100%;}
-      .tab-btn{flex:1;text-align:center;padding:9px 10px;font-size:12px;}
-      .chart-card{padding:16px;}
-      .data-table-wrap{padding:16px;}
-      .data-table-wrap th, .data-table-wrap td{padding:8px 8px;font-size:12px;}
-      .conclusions-card{padding:20px;}
-      .conclusions-card p{font-size:14px;}
-    }
-    @media(max-width:400px){
-      .metrics-grid{grid-template-columns:repeat(2,1fr);}
-      .metric-card{padding:12px 8px;}
+    body{font-family:sans-serif;background:#f9fafb;min-height:100vh;}
+    .tab-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:transparent;color:#6b7280;}
+    .tab-btn.active{background:#fff;color:#111827;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+    .tab-content{display:none;}.tab-content.active{display:block;}
+    .cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;}
+    .desc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+    .chart-wrap{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:20px;margin-bottom:20px;position:relative;}
+    .data-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .data-table th{padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;font-size:12px;font-weight:700;}
+    .data-table th:first-child{text-align:left;}
+    .data-table td{text-align:center;}
+    @media(max-width:600px){
+      .tab-btn{padding:8px 12px;font-size:12px;}
+      h1{font-size:18px!important;}
     }
   </style>
 </head>
 <body>
-
-<div class="hero">
-  <div class="hero-label">Athlete Performance Report</div>
-  <div class="hero-name">Coach Name</div>
-  <div class="hero-sub">Sport &nbsp;·&nbsp; Coach Name</div>
-  <div class="hero-date">12 March 2026</div>
-</div>
-
-<div class="container">
-  <div class="tabs">
-    <button class="tab-btn active" onclick="showTab('report',this)">📊 Report</button>
-    <button class="tab-btn" onclick="showTab('data',this)">🔢 Data</button>
-    <button class="tab-btn" onclick="showTab('conclusions',this)">✦ Conclusions</button>
+  <div style="background:#111827;color:#fff;padding:24px 32px;">
+    <p style="font-size:11px;letter-spacing:2px;color:#9ca3af;margin-bottom:8px;text-transform:uppercase;">Athlete Performance Report</p>
+    <h1 style="font-size:22px;font-weight:700;">Coach Name</h1>
+    <p style="font-size:13px;color:#d1d5db;margin-top:4px;">Sport &nbsp;·&nbsp; Coach Name</p>
+    <p style="font-size:11px;color:#6b7280;margin-top:6px;">12 March 2026</p>
   </div>
 
-  <!-- REPORT TAB -->
-  <div id="tab-report" class="tab-content active">
-    <div class="metrics-grid"><div class="metric-card" style="border-color:#ef4444">
-        <div style="font-size:11px;font-weight:700;color:#ef4444;margin-bottom:4px;">PIS</div>
-        <div style="font-size:28px;font-weight:800;color:#111827;">47</div>
-        <div style="font-size:12px;font-weight:600;color:#16a34a;">▼ 25 pts</div>
-        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">Performance Interference Score</div>
-      </div><div class="metric-card" style="border-color:#3b82f6">
-        <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:4px;">PSS</div>
-        <div style="font-size:28px;font-weight:800;color:#111827;">87</div>
-        <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 22 pts</div>
-        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">Pressure Stability Score</div>
-      </div><div class="metric-card" style="border-color:#10b981">
-        <div style="font-size:11px;font-weight:700;color:#10b981;margin-bottom:4px;">RAS</div>
-        <div style="font-size:28px;font-weight:800;color:#111827;">85</div>
-        <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 27 pts</div>
-        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">Role Alignment Score</div>
-      </div><div class="metric-card" style="border-color:#f59e0b">
-        <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:4px;">CPTS</div>
-        <div style="font-size:28px;font-weight:800;color:#111827;">84</div>
-        <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 24 pts</div>
-        <div style="font-size:10px;color:#9ca3af;margin-top:4px;">Coach Performance Trust Score</div>
-      </div></div>
-    <div class="chart-card">
-      <h3>Score Trends Over Time</h3>
-      <div class="chart-wrap"><canvas id="myChart"></canvas></div>
-      <p style="font-size:11px;color:#94a3b8;font-style:italic;margin-top:12px;">* Hover over any point to see a summary · Lower scores = better performance</p>
+  <div style="max-width:860px;margin:0 auto;padding:24px 16px 40px;">
+    <div style="display:flex;gap:4px;background:#e5e7eb;border-radius:10px;padding:4px;width:fit-content;margin-bottom:24px;flex-wrap:wrap;">
+      <button class="tab-btn active" onclick="showTab('report',this)">Report</button>
+      <button class="tab-btn" onclick="showTab('data',this)">📊 Data</button>
+      <button class="tab-btn" onclick="showTab('conclusions',this)">✦ Conclusions</button>
     </div>
-    <div class="desc-grid">
+
+    <!-- REPORT TAB -->
+    <div id="tab-report" class="tab-content active">
+      <div class="cards-grid"><div style="background:#fff;border:2px solid #ef4444;border-radius:12px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#ef4444;margin-bottom:4px;">PIS</div>
+        <div style="font-size:24px;font-weight:700;color:#111827;">47</div>
+        <div style="font-size:12px;font-weight:600;color:#16a34a;">▼ 25 pts</div>
+      </div><div style="background:#fff;border:2px solid #3b82f6;border-radius:12px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#3b82f6;margin-bottom:4px;">PSS</div>
+        <div style="font-size:24px;font-weight:700;color:#111827;">87</div>
+        <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 22 pts</div>
+      </div><div style="background:#fff;border:2px solid #10b981;border-radius:12px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#10b981;margin-bottom:4px;">RAS</div>
+        <div style="font-size:24px;font-weight:700;color:#111827;">85</div>
+        <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 27 pts</div>
+      </div><div style="background:#fff;border:2px solid #f59e0b;border-radius:12px;padding:14px 16px;">
+        <div style="font-size:11px;font-weight:700;color:#f59e0b;margin-bottom:4px;">CPTS</div>
+        <div style="font-size:24px;font-weight:700;color:#111827;">84</div>
+        <div style="font-size:12px;font-weight:600;color:#dc2626;">▲ 24 pts</div>
+      </div></div>
+      <div class="chart-wrap">
+        <p style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Score Trends Over Time</p>
+        <p style="font-size:11px;color:#bbb;margin-bottom:12px;">💡 Hover over a point to see scores · Double-click chart to dismiss tooltip</p>
+        <canvas id="myChart"></canvas>
+        <p style="font-size:11px;color:#9ca3af;font-style:italic;margin-top:10px;">* All scores: lower = better performance</p>
+      </div>
+      <div class="desc-grid">
       <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
-        <div style="width:4px;border-radius:4px;background:#ef4444;flex-shrink:0;"></div>
+        <div style="width:3px;border-radius:4px;background:#ef4444;flex-shrink:0;"></div>
         <div>
           <div style="font-size:10px;font-weight:700;color:#ef4444;text-transform:uppercase;">PIS</div>
           <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Performance Interference Score</div>
@@ -119,7 +74,7 @@
         </div>
       </div>
       <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
-        <div style="width:4px;border-radius:4px;background:#3b82f6;flex-shrink:0;"></div>
+        <div style="width:3px;border-radius:4px;background:#3b82f6;flex-shrink:0;"></div>
         <div>
           <div style="font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;">PSS</div>
           <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Pressure Stability Score</div>
@@ -127,7 +82,7 @@
         </div>
       </div>
       <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
-        <div style="width:4px;border-radius:4px;background:#10b981;flex-shrink:0;"></div>
+        <div style="width:3px;border-radius:4px;background:#10b981;flex-shrink:0;"></div>
         <div>
           <div style="font-size:10px;font-weight:700;color:#10b981;text-transform:uppercase;">RAS</div>
           <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Role Alignment Score</div>
@@ -135,145 +90,138 @@
         </div>
       </div>
       <div style="background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px;display:flex;gap:10px;">
-        <div style="width:4px;border-radius:4px;background:#f59e0b;flex-shrink:0;"></div>
+        <div style="width:3px;border-radius:4px;background:#f59e0b;flex-shrink:0;"></div>
         <div>
           <div style="font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;">CPTS</div>
           <div style="font-size:13px;font-weight:600;color:#111827;margin:2px 0;">Coach Performance Trust Score</div>
           <div style="font-size:11px;color:#6b7280;">Measures coach concern about athlete under pressure. Lower is better.</div>
         </div>
       </div></div>
-  </div>
+    </div>
 
-  <!-- DATA TAB -->
-  <div id="tab-data" class="tab-content">
-    <div class="data-table-wrap">
-      <h3>Score Breakdown by Period</h3>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Period</th>
-              <th style="color:#ef4444;">PIS</th>
-              <th style="color:#3b82f6;">PSS</th>
-              <th style="color:#10b981;">RAS</th>
-              <th style="color:#f59e0b;">CPTS</th>
-            </tr>
-          </thead>
-          <tbody>
+    <!-- DATA TAB -->
+    <div id="tab-data" class="tab-content">
+      <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:20px;">
+        <p style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Score Data Table</p>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="text-align:left;">Period</th>
+                <th style="color:#ef4444;">PIS</th>
+                <th style="color:#3b82f6;">PSS</th>
+                <th style="color:#10b981;">RAS</th>
+                <th style="color:#f59e0b;">CPTS</th>
+              </tr>
+            </thead>
+            <tbody>
       <tr>
-        <td>Month 1</td>
-        <td style="color:#ef4444;font-weight:600;">72</td>
-        <td style="color:#3b82f6;font-weight:600;">65</td>
-        <td style="color:#10b981;font-weight:600;">58</td>
-        <td style="color:#f59e0b;font-weight:600;">60</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;font-weight:600;font-size:13px;">Month 1</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#ef4444;font-weight:600;">72</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#3b82f6;font-weight:600;">65</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#10b981;font-weight:600;">58</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#f59e0b;font-weight:600;">60</td>
       </tr>
       <tr>
-        <td>Month 2</td>
-        <td style="color:#ef4444;font-weight:600;">68</td>
-        <td style="color:#3b82f6;font-weight:600;">68</td>
-        <td style="color:#10b981;font-weight:600;">63</td>
-        <td style="color:#f59e0b;font-weight:600;">62</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;font-weight:600;font-size:13px;">Month 2</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#ef4444;font-weight:600;">68</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#3b82f6;font-weight:600;">68</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#10b981;font-weight:600;">63</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#f59e0b;font-weight:600;">62</td>
       </tr>
       <tr>
-        <td>Month 3</td>
-        <td style="color:#ef4444;font-weight:600;">63</td>
-        <td style="color:#3b82f6;font-weight:600;">74</td>
-        <td style="color:#10b981;font-weight:600;">70</td>
-        <td style="color:#f59e0b;font-weight:600;">67</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;font-weight:600;font-size:13px;">Month 3</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#ef4444;font-weight:600;">63</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#3b82f6;font-weight:600;">74</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#10b981;font-weight:600;">70</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#f59e0b;font-weight:600;">67</td>
       </tr>
       <tr>
-        <td>Month 4</td>
-        <td style="color:#ef4444;font-weight:600;">58</td>
-        <td style="color:#3b82f6;font-weight:600;">78</td>
-        <td style="color:#10b981;font-weight:600;">75</td>
-        <td style="color:#f59e0b;font-weight:600;">73</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;font-weight:600;font-size:13px;">Month 4</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#ef4444;font-weight:600;">58</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#3b82f6;font-weight:600;">78</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#10b981;font-weight:600;">75</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#f59e0b;font-weight:600;">73</td>
       </tr>
       <tr>
-        <td>Month 5</td>
-        <td style="color:#ef4444;font-weight:600;">52</td>
-        <td style="color:#3b82f6;font-weight:600;">82</td>
-        <td style="color:#10b981;font-weight:600;">80</td>
-        <td style="color:#f59e0b;font-weight:600;">79</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;font-weight:600;font-size:13px;">Month 5</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#ef4444;font-weight:600;">52</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#3b82f6;font-weight:600;">82</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#10b981;font-weight:600;">80</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#f59e0b;font-weight:600;">79</td>
       </tr>
       <tr>
-        <td>Month 6</td>
-        <td style="color:#ef4444;font-weight:600;">47</td>
-        <td style="color:#3b82f6;font-weight:600;">87</td>
-        <td style="color:#10b981;font-weight:600;">85</td>
-        <td style="color:#f59e0b;font-weight:600;">84</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;font-weight:600;font-size:13px;">Month 6</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#ef4444;font-weight:600;">47</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#3b82f6;font-weight:600;">87</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#10b981;font-weight:600;">85</td>
+        <td style="padding:10px 14px;border:1px solid #e5e7eb;text-align:center;font-size:13px;color:#f59e0b;font-weight:600;">84</td>
       </tr></tbody>
-        </table>
+          </table>
+        </div>
+        <p style="font-size:11px;color:#9ca3af;font-style:italic;margin-top:12px;">* All scores are out of 100. Lower = better performance.</p>
       </div>
-      <p style="font-size:11px;color:#94a3b8;font-style:italic;margin-top:14px;">* All scores are out of 100. Lower = better performance.</p>
+    </div>
+
+    <!-- CONCLUSIONS TAB -->
+    <div id="tab-conclusions" class="tab-content">
+      <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:24px;">
+        <p style="font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">Conclusions</p>
+        <div style="font-size:14px;color:#374151;line-height:1.8;white-space:pre-line;"></div>
+      </div>
     </div>
   </div>
 
-  <!-- CONCLUSIONS TAB -->
-  <div id="tab-conclusions" class="tab-content">
-    <div class="conclusions-card">
-      <h3>Conclusions</h3>
-      <p></p>
-    </div>
-  </div>
-</div>
+  <script>
+    const DATA = [{"month":"Month 1","PIS":72,"PSS":65,"RAS":58,"CPTS":60},{"month":"Month 2","PIS":68,"PSS":68,"RAS":63,"CPTS":62},{"month":"Month 3","PIS":63,"PSS":74,"RAS":70,"CPTS":67},{"month":"Month 4","PIS":58,"PSS":78,"RAS":75,"CPTS":73},{"month":"Month 5","PIS":52,"PSS":82,"RAS":80,"CPTS":79},{"month":"Month 6","PIS":47,"PSS":87,"RAS":85,"CPTS":84}];
+    const COLORS = { PIS:"#ef4444", PSS:"#3b82f6", RAS:"#10b981", CPTS:"#f59e0b" };
+    const labels = DATA.map(d => d.month);
+    const datasets = ["PIS","PSS","RAS","CPTS"].map(k => ({
+      label: k, data: DATA.map(d => d[k]),
+      borderColor: COLORS[k], backgroundColor: COLORS[k],
+      borderWidth: 2.5, pointRadius: 5, pointHoverRadius: 7, tension: 0.3, fill: false
+    }));
 
-<script>
-  const DATA = [{"month":"Month 1","PIS":72,"PSS":65,"RAS":58,"CPTS":60},{"month":"Month 2","PIS":68,"PSS":68,"RAS":63,"CPTS":62},{"month":"Month 3","PIS":63,"PSS":74,"RAS":70,"CPTS":67},{"month":"Month 4","PIS":58,"PSS":78,"RAS":75,"CPTS":73},{"month":"Month 5","PIS":52,"PSS":82,"RAS":80,"CPTS":79},{"month":"Month 6","PIS":47,"PSS":87,"RAS":85,"CPTS":84}];
-  const COLORS = { PIS:"#ef4444", PSS:"#3b82f6", RAS:"#10b981", CPTS:"#f59e0b" };
-  const metrics = ["PIS","PSS","RAS","CPTS"];
-
-  new Chart(document.getElementById("myChart"), {
-    type: "line",
-    data: {
-      labels: DATA.map(d => d.month),
-      datasets: metrics.map(k => ({
-        label: k,
-        data: DATA.map(d => d[k]),
-        borderColor: COLORS[k],
-        backgroundColor: COLORS[k] + "22",
-        borderWidth: 3,
-        pointRadius: 5,
-        pointHoverRadius: 8,
-        tension: 0.4,
-        fill: false
-      }))
-    },
-    options: {
-      responsive: true,
-      interaction: { mode: "index", intersect: false },
-      plugins: {
-        legend: { position: "bottom", labels: { padding: 16, font: { size: 12 } } },
-        tooltip: {
-          backgroundColor: "#0f172a",
-          titleColor: "#94a3b8",
-          bodyColor: "#f1f5f9",
-          padding: 14,
-          cornerRadius: 10,
-          titleFont: { size: 12, weight: "bold" },
-          bodyFont: { size: 13 },
-          callbacks: {
-            title: items => "📅 " + items[0].label,
-            afterBody: items => {
-              const row = DATA[items[0].dataIndex];
-              const total = metrics.reduce((s,k) => s + row[k], 0);
-              return ["─────────────────", "Combined Score: " + total];
+    const chart = new Chart(document.getElementById("myChart"), {
+      type: "line",
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        scales: {
+          y: { min: 0, max: 100, grid: { color: "#f0f0f0" }, ticks: { font: { size: 12 } } },
+          x: { grid: { color: "#f0f0f0" }, ticks: { font: { size: 12 } } }
+        },
+        plugins: {
+          legend: { position: "bottom", labels: { font: { size: 13 }, padding: 16 } },
+          tooltip: {
+            enabled: true,
+            backgroundColor: "rgba(17,24,39,0.92)",
+            titleFont: { size: 13, weight: "bold" },
+            bodyFont: { size: 13 },
+            padding: 12,
+            cornerRadius: 10,
+            callbacks: {
+              label: ctx => " " + ctx.dataset.label + ": " + ctx.parsed.y
             }
           }
         }
-      },
-      scales: {
-        y: { min: 0, max: 100, grid: { color: "#f1f5f9" }, ticks: { font: { size: 11 } } },
-        x: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11 } } }
       }
-    }
-  });
+    });
 
-  function showTab(name, btn) {
-    document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
-    document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-    document.getElementById("tab-"+name).classList.add("active");
-    btn.classList.add("active");
-  }
-</script>
+    // Double-click to dismiss tooltip
+    document.getElementById("myChart").addEventListener("dblclick", () => {
+      chart.tooltip.setActiveElements([], {x:0,y:0});
+      chart.update();
+    });
+
+    function showTab(name, btn) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active"));
+      document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+      document.getElementById("tab-"+name).classList.add("active");
+      btn.classList.add("active");
+    }
+  </script>
 </body>
 </html>
