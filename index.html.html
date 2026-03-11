@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Athlete Performance Report</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; background: #f9fafb; min-height: 100vh; }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+    const {
+      LineChart, Line, XAxis, YAxis, CartesianGrid,
+      Tooltip, Legend, ResponsiveContainer, ReferenceLine
+    } = Recharts;
+
+    const COLORS = { PIS: "#ef4444", PSS: "#3b82f6", RAS: "#10b981", CPTS: "#f59e0b" };
+
+    const METRIC_INFO = {
+      PIS: { label: "Performance Interference Score", desc: "Measures subconscious interference during a game. Lower is better." },
+      PSS: { label: "Pressure Stability Score", desc: "Measures pressure, mistakes, and turnovers. Lower is better." },
+      RAS: { label: "Role Alignment Score", desc: "Measures misalignment with role assessment. Lower is better." },
+      CPTS: { label: "Coach Performance Trust Score", desc: "Measures coach concern about athlete under pressure. Lower is better." },
+    };
+
+    const DEFAULT_DATA = [
+      { month: "Month 1", PIS: 72, PSS: 65, RAS: 58, CPTS: 60 },
+      { month: "Month 2", PIS: 68, PSS: 68, RAS: 63, CPTS: 62 },
+      { month: "Month 3", PIS: 63, PSS: 74, RAS: 70, CPTS: 67 },
+      { month: "Month 4", PIS: 58, PSS: 78, RAS: 75, CPTS: 73 },
+      { month: "Month 5", PIS: 52, PSS: 82, RAS: 80, CPTS: 79 },
+      { month: "Month 6", PIS: 47, PSS: 87, RAS: 85, CPTS: 84 },
+    ];
+
+    function App() {
+      const [athleteName, setAthleteName] = useState("Athlete Name");
+      const [sport, setSport] = useState("Sport");
+      const [coachName, setCoachName] = useState("Coach Name");
+      const [data, setData] = useState(DEFAULT_DATA);
+      const [visible, setVisible] = useState({ PIS: true, PSS: true, RAS: true, CPTS: true });
+      const [tab, setTab] = useState("report");
+      const [conclusions, setConclusions] = useState("");
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState("");
+
+      const toggleMetric = k => setVisible(v => ({ ...v, [k]: !v[k] }));
+
+      const updateCell = (i, key, val) => {
+        setData(d => d.map((row, idx) =>
+          idx === i ? { ...row, [key]: Math.min(100, Math.max(0, Number(val) || 0)) } : row
+        ));
+      };
+
+      const updateMonth = (i, val) => {
+        setData(d => d.map((row, idx) => idx === i ? { ...row, month: val } : row));
+      };
+
+      const addPeriod = () => setData(d => [...d, { month: `Month ${d.length + 1}`, PIS: 50, PSS: 50, RAS: 50, CPTS: 50 }]);
+      const removePeriod = () => setData(d => d.length > 1 ? d.slice(0, -1) : d);
+
+      const generateConclusions = async () => {
+        setLoading(true);
+        setError("");
+        setConclusions("");
+
+        const metricSummary = Object.entries(METRIC_INFO).map(([k, { label }]) => {
+          const vals = data.map(d => d[k]);
+          const diff = vals[vals.length - 1] - vals[0];
+          const dir = diff > 0 ? "increased" : diff < 0 ? "decreased" : "remained stable";
+          return `- ${label} (${k}): ${vals[0]} → ${vals[vals.length - 1]} (${dir} by ${Math.abs(diff)} pts). Lower is better for all scores.`;
+        }).join("\n");
+
+        const prompt = `You are a sports performance analyst writing a report conclusion for a coach.
+
+Athlete: ${athleteName} | Sport: ${sport} | Coach: ${coachName}
+Period: ${data[0].month} to ${data[data.length - 1].month} (${data.length} sessions)
+
+Score trends (0–100):
+${metricSummary}
+
+Score definitions:
+- PIS: subconscious mental interference in-game (lower = better)
+- PSS: stability under pressure, mistakes, turnovers (higher = better)
+- RAS: acceptance and alignment with role (higher = better)
+- CPTS: coach-reported trust in athlete under pressure (higher = better)
+
+Write a professional 4–5 paragraph conclusion for the coach. Cover: overall trend, strongest growth area, area needing attention, relationships between scores, and a forward-looking recommendation. Warm but professional tone.`;
+
+        try {
+          const res = await fetch("https://api.anthropic.com/v1/messages", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": "YOUR_API_KEY_HERE",      // <-- Replace with your Anthropic API key
+              "anthropic-version": "2023-06-01",
+              "anthropic-dangerous-direct-browser-access": "true"
+            },
+            body: JSON.stringify({
+              model: "claude-sonnet-4-20250514",
+              max_tokens: 1000,
+              messages: [{ role: "user", content: prompt }],
+            }),
+          });
+          const json = await res.json();
+          const text = (json.content || []).map(b => b.text || "").join("\n").trim();
+          if (!text) throw new Error("Empty response");
+          setConclusions(text);
+          setTab("conclusions");
+        } catch (e) {
+          setError("Could not generate conclusions. Please check your API key and try again.");
+        }
+        setLoading(false);
+      };
+
+      const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#f9fafb", fontFamily: "sans-serif" }}>
+          {/* Header */}
+          <div style={{ background: "#111827", color: "#fff", padding: "24px 32px" }}>
+            <p style={{ fontSize: 11, letterSpacing: 2, color: "#9ca3af", marginBottom: 8, textTransform: "uppercase" }}>
+              Athlete Performance Report
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "flex-end" }}>
+              <input
+                value={athleteName}
+                onChange={e => setAthleteName(e.target.value)}
+                style={{ fontSize: 22, fontWeight: 700, background: "transparent", border: "none", borderBottom: "1px solid #4b5563", color: "#fff", outline: "none", width: 200 }}
+              />
+              <input
+                value={sport}
+                onChange={e => setSport(e.target.value)}
+                placeholder="Sport"
+                style={{ fontSize: 13, background: "transparent", border: "none", borderBottom: "1px solid #4b5563", color: "#d1d5db", outline: "none", width: 130 }}
+              />
+              <input
+                value={coachName}
+                onChange={e => setCoachName(e.target.value)}
+                placeholder="Coach Name"
+                style={{ fontSize: 13, background: "transparent", border: "none", borderBottom: "1px solid #4b5563", color: "#d1d5db", outline: "none", width: 160 }}
+              />
+            </div>
+            <p style={{ fontSize: 11, color: "#6b7280", marginTop: 8 }}>{today}</p>
+          </div>
+
+          <div style={{ maxWidth: 860, margin: "0 auto", padding: "32px 24px" }}>
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: 4, background: "#e5e7eb", borderRadius: 10, padding: 4, width: "fit-content", marginBottom: 24 }}>
+              {["report", "data", "conclusions"].map(t => (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  padding: "8px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 500,
+                  background: tab === t ? "#fff" : "transparent",
+                  color: tab === t ? "#111827" : "#6b7280",
+                  boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                }}>
+                  {t === "conclusions" ? "✦ Conclusions" : t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {/* REPORT TAB */}
+            {tab === "report" && (
+              <div>
+                {/* Metric Cards */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
+                  {Object.entries(METRIC_INFO).map(([k]) => {
+                    const vals = data.map(d => d[k]);
+                    const latest = vals[vals.length - 1];
+                    const diff = latest - vals[0];
+                    const positive = diff < 0;
+                    return (
+                      <button key={k} onClick={() => toggleMetric(k)} style={{
+                        background: visible[k] ? "#fff" : "#f3f4f6",
+                        border: `2px solid ${visible[k] ? COLORS[k] : "#e5e7eb"}`,
+                        borderRadius: 12, padding: "14px 16px", textAlign: "left", cursor: "pointer",
+                        opacity: visible[k] ? 1 : 0.5,
+                      }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: COLORS[k], marginBottom: 4 }}>{k}</div>
+                        <div style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}>{latest}</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: positive ? "#16a34a" : "#dc2626" }}>
+                          {diff >= 0 ? "▲" : "▼"} {Math.abs(diff)} pts
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Chart */}
+                <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24, marginBottom: 20 }}>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 16 }}>
+                    Score Trends Over Time
+                  </p>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} />
+                      <Tooltip contentStyle={{ borderRadius: 8, fontSize: 13 }} />
+                      <Legend />
+                      <ReferenceLine y={50} stroke="#d1d5db" strokeDasharray="4 4" />
+                      {Object.keys(METRIC_INFO).map(k =>
+                        visible[k] && (
+                          <Line key={k} type="monotone" dataKey={k} stroke={COLORS[k]}
+                            strokeWidth={2.5} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                        )
+                      )}
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <p style={{ fontSize: 11, color: "#9ca3af", fontStyle: "italic", marginTop: 8 }}>
+                    * All scores: lower = better performance
+                  </p>
+                </div>
+
+                {/* Metric Descriptions */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+                  {Object.entries(METRIC_INFO).map(([k, { label, desc }]) => (
+                    <div key={k} style={{ background: "#fff", borderRadius: 10, border: "1px solid #e5e7eb", padding: 14, display: "flex", gap: 10 }}>
+                      <div style={{ width: 3, borderRadius: 4, background: COLORS[k], flexShrink: 0 }} />
+                      <div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: COLORS[k], textTransform: "uppercase" }}>{k}</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", margin: "2px 0" }}>{label}</div>
+                        <div style={{ fontSize: 11, color: "#6b7280" }}>{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* DATA TAB */}
+            {tab === "data" && (
+              <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>Edit Score Data</p>
+                <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 16 }}>Enter scores 0–100. Rename periods as needed. Chart updates live.</p>
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ background: "#f9fafb" }}>
+                        <th style={{ padding: "8px 12px", textAlign: "left", border: "1px solid #e5e7eb" }}>Period</th>
+                        {Object.keys(METRIC_INFO).map(k => (
+                          <th key={k} style={{ padding: "8px 12px", textAlign: "center", border: "1px solid #e5e7eb", color: COLORS[k], fontWeight: 700 }}>{k}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {data.map((row, i) => (
+                        <tr key={i}>
+                          <td style={{ padding: 6, border: "1px solid #e5e7eb" }}>
+                            <input value={row.month} onChange={e => updateMonth(i, e.target.value)}
+                              style={{ width: "100%", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 8px", fontSize: 13 }} />
+                          </td>
+                          {Object.keys(METRIC_INFO).map(k => (
+                            <td key={k} style={{ padding: 6, border: "1px solid #e5e7eb" }}>
+                              <input type="number" min="0" max="100" value={row[k]}
+                                onChange={e => updateCell(i, k, e.target.value)}
+                                style={{ width: "100%", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 8px", fontSize: 13, textAlign: "center" }} />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <button onClick={addPeriod} style={{ padding: "6px 14px", background: "#111827", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>+ Add Period</button>
+                  <button onClick={removePeriod} style={{ padding: "6px 14px", background: "#e5e7eb", color: "#374151", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 }}>− Remove Last</button>
+                </div>
+              </div>
+            )}
+
+            {/* CONCLUSIONS TAB */}
+            {tab === "conclusions" && (
+              <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e5e7eb", padding: 24 }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 }}>AI-Generated Conclusions</p>
+                <p style={{ fontSize: 12, color: "#9ca3af", marginBottom: 16 }}>Claude will analyse the score trends and write a professional summary for the coach.</p>
+                <button onClick={generateConclusions} disabled={loading} style={{
+                  padding: "10px 22px", background: "#111827", color: "#fff", border: "none",
+                  borderRadius: 8, cursor: loading ? "not-allowed" : "pointer", fontSize: 13,
+                  fontWeight: 600, opacity: loading ? 0.6 : 1, marginBottom: 20
+                }}>
+                  {loading ? "Generating…" : conclusions ? "↺ Regenerate" : "✦ Generate Conclusions"}
+                </button>
+                {error && <p style={{ color: "#dc2626", fontSize: 13, marginBottom: 12 }}>{error}</p>}
+                {conclusions && (
+                  <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 20, fontSize: 14, color: "#374151", lineHeight: 1.8, whiteSpace: "pre-line" }}>
+                    {conclusions}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
