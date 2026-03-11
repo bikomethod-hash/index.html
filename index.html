@@ -4,366 +4,118 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Athlete Performance Report</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: sans-serif; background: #f9fafb; min-height: 100vh; }
-    input[type=number] { -moz-appearance: textfield; }
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-    .header { background: #111827; color: #fff; padding: 24px 32px; }
-    .header-sub { font-size: 11px; letter-spacing: 2px; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase; }
-    .header-inputs { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
-    .header-input { font-size: 22px; font-weight: 700; background: transparent; border: none;
-      border-bottom: 1px solid #4b5563; color: #fff; outline: none; width: 200px; }
-    .header-input-sm { font-size: 13px; background: transparent; border: none;
-      border-bottom: 1px solid #4b5563; color: #d1d5db; outline: none; width: 160px; }
-    .header-date { font-size: 11px; color: #6b7280; margin-top: 8px; }
-
-    .main { max-width: 860px; margin: 0 auto; padding: 32px 24px; }
-
-    .tabs { display: flex; gap: 4px; background: #e5e7eb; border-radius: 10px;
-      padding: 4px; width: fit-content; margin-bottom: 24px; }
-    .tab-btn { padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer;
-      font-size: 13px; font-weight: 500; background: transparent; color: #6b7280; }
-    .tab-btn.active { background: #fff; color: #111827; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-
-    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 12px; margin-bottom: 24px; }
-    .card { border-radius: 12px; padding: 14px 16px; text-align: left; cursor: pointer;
-      background: #fff; transition: opacity 0.2s; }
-    .card.dimmed { opacity: 0.4; background: #f3f4f6; }
-    .card-key { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
-    .card-val { font-size: 24px; font-weight: 700; color: #111827; }
-    .card-diff { font-size: 12px; font-weight: 600; }
-
-    .chart-box { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;
-      padding: 24px; margin-bottom: 20px; }
-    .chart-label { font-size: 11px; font-weight: 600; color: #9ca3af;
-      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
-    .chart-wrap { position: relative; width: 100%; height: 300px; }
-    svg.chart { width: 100%; height: 100%; }
-    .chart-note { font-size: 11px; color: #9ca3af; font-style: italic; margin-top: 8px; }
-
-    .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 12px; }
-    .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #374151; cursor: pointer; }
-    .legend-line { width: 20px; height: 3px; border-radius: 2px; }
-
-    .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-    .metric-card { background: #fff; border-radius: 10px; border: 1px solid #e5e7eb;
-      padding: 14px; display: flex; gap: 10px; }
-    .metric-bar { width: 3px; border-radius: 4px; flex-shrink: 0; }
-    .metric-key { font-size: 10px; font-weight: 700; text-transform: uppercase; }
-    .metric-name { font-size: 13px; font-weight: 600; color: #111827; margin: 2px 0; }
-    .metric-desc { font-size: 11px; color: #6b7280; }
-
-    .data-box { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 24px; }
-    .data-title { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase;
-      letter-spacing: 1px; margin-bottom: 4px; }
-    .data-sub { font-size: 12px; color: #9ca3af; margin-bottom: 16px; }
-    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .data-table th { padding: 8px 12px; text-align: center; border: 1px solid #e5e7eb;
-      background: #f9fafb; font-weight: 700; }
-    .data-table th:first-child { text-align: left; }
-    .data-table td { padding: 6px; border: 1px solid #e5e7eb; }
-    .data-table input { width: 100%; border: 1px solid #e5e7eb; border-radius: 6px;
-      padding: 4px 8px; font-size: 13px; text-align: center; }
-    .data-table td:first-child input { text-align: left; }
-    .btn-dark { padding: 6px 14px; background: #111827; color: #fff; border: none;
-      border-radius: 6px; cursor: pointer; font-size: 13px; }
-    .btn-light { padding: 6px 14px; background: #e5e7eb; color: #374151; border: none;
-      border-radius: 6px; cursor: pointer; font-size: 13px; }
-    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
-
-    .conc-box { background: #fff; border-radius: 12px; border: 1px solid #e5e7eb; padding: 24px; }
-    .conc-btn { padding: 10px 22px; background: #111827; color: #fff; border: none;
-      border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
-    .conc-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .conc-error { color: #dc2626; font-size: 13px; margin-bottom: 12px; }
-    .conc-text { border-top: 1px solid #f3f4f6; padding-top: 20px; font-size: 14px;
-      color: #374151; line-height: 1.8; white-space: pre-line; }
   </style>
 </head>
 <body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+    const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } = Recharts;
 
-<div class="header">
-  <p class="header-sub">Athlete Performance Report</p>
-  <div class="header-inputs">
-    <input id="athleteName" class="header-input" value="Athlete Name" />
-    <input id="sport" class="header-input-sm" placeholder="Sport" value="Sport" />
-    <input id="coachName" class="header-input-sm" placeholder="Coach Name" value="Coach Name" />
-  </div>
-  <p class="header-date" id="todayDate"></p>
-</div>
+    const ATHLETE_NAME = "Karl";
+    const SPORT        = "Basketball";
+    const COACH_NAME   = "Dr. Kons";
+    const DATA         = [{"month":"Month 1","PIS":80,"PSS":65,"RAS":100,"CPTS":100},{"month":"Month 2","PIS":100,"PSS":68,"RAS":63,"CPTS":0},{"month":"Month 3","PIS":90,"PSS":100,"RAS":100,"CPTS":67},{"month":"Month 4","PIS":58,"PSS":78,"RAS":75,"CPTS":0},{"month":"Month 5","PIS":100,"PSS":82,"RAS":80,"CPTS":79},{"month":"Month 6","PIS":2,"PSS":100,"RAS":100,"CPTS":100}];
+    const CONCLUSIONS  = "";
 
-<div class="main">
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('report', this)">Report</button>
-    <button class="tab-btn" onclick="switchTab('data', this)">Data</button>
-    <button class="tab-btn" onclick="switchTab('conclusions', this)">✦ Conclusions</button>
-  </div>
+    const COLORS = { PIS: "#ef4444", PSS: "#3b82f6", RAS: "#10b981", CPTS: "#f59e0b" };
+    const METRIC_INFO = {
+      PIS:  { label: "Performance Interference Score", desc: "Measures subconscious interference during a game. Lower is better." },
+      PSS:  { label: "Pressure Stability Score",       desc: "Measures pressure, mistakes, and turnovers. Lower is better." },
+      RAS:  { label: "Role Alignment Score",           desc: "Measures misalignment with role assessment. Lower is better." },
+      CPTS: { label: "Coach Performance Trust Score",  desc: "Measures coach concern about athlete under pressure. Lower is better." },
+    };
 
-  <!-- REPORT TAB -->
-  <div id="tab-report">
-    <div class="cards" id="cards"></div>
-    <div class="chart-box">
-      <p class="chart-label">Score Trends Over Time</p>
-      <div class="legend" id="legend"></div>
-      <div class="chart-wrap">
-        <svg class="chart" id="chartSvg" viewBox="0 0 800 280" preserveAspectRatio="none"></svg>
-      </div>
-      <p class="chart-note">* All scores: lower = better performance</p>
-    </div>
-    <div class="metric-grid" id="metricGrid"></div>
-  </div>
-
-  <!-- DATA TAB -->
-  <div id="tab-data" style="display:none">
-    <div class="data-box">
-      <p class="data-title">Edit Score Data</p>
-      <p class="data-sub">Enter scores 0–100. Rename periods as needed. Chart updates live.</p>
-      <div style="overflow-x:auto"><table class="data-table" id="dataTable"></table></div>
-      <div class="btn-row">
-        <button class="btn-dark" onclick="addPeriod()">+ Add Period</button>
-        <button class="btn-light" onclick="removePeriod()">− Remove Last</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONCLUSIONS TAB -->
-  <div id="tab-conclusions" style="display:none">
-    <div class="conc-box">
-      <p class="data-title">AI-Generated Conclusions</p>
-      <p class="data-sub">Claude will analyse the score trends and write a professional summary for the coach.</p>
-      <button class="conc-btn" id="genBtn" onclick="generateConclusions()">✦ Generate Conclusions</button>
-      <p class="conc-error" id="concError" style="display:none"></p>
-      <div class="conc-text" id="concText" style="display:none"></div>
-    </div>
-  </div>
-</div>
-
-<script>
-  const COLORS = { PIS: "#ef4444", PSS: "#3b82f6", RAS: "#10b981", CPTS: "#f59e0b" };
-  const METRICS = ["PIS", "PSS", "RAS", "CPTS"];
-  const METRIC_INFO = {
-    PIS: { label: "Performance Interference Score", desc: "Measures subconscious interference during a game. Lower is better." },
-    PSS: { label: "Pressure Stability Score", desc: "Measures pressure, mistakes, and turnovers. Lower is better." },
-    RAS: { label: "Role Alignment Score", desc: "Measures misalignment with role assessment. Lower is better." },
-    CPTS: { label: "Coach Performance Trust Score", desc: "Measures coach concern about athlete under pressure. Lower is better." },
-  };
-
-  let data = [
-    { month: "Month 1", PIS: 72, PSS: 65, RAS: 58, CPTS: 60 },
-    { month: "Month 2", PIS: 68, PSS: 68, RAS: 63, CPTS: 62 },
-    { month: "Month 3", PIS: 63, PSS: 74, RAS: 70, CPTS: 67 },
-    { month: "Month 4", PIS: 58, PSS: 78, RAS: 75, CPTS: 73 },
-    { month: "Month 5", PIS: 52, PSS: 82, RAS: 80, CPTS: 79 },
-    { month: "Month 6", PIS: 47, PSS: 87, RAS: 85, CPTS: 84 },
-  ];
-
-  let visible = { PIS: true, PSS: true, RAS: true, CPTS: true };
-
-  // Set date
-  document.getElementById("todayDate").textContent =
-    new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
-
-  function switchTab(name, btn) {
-    ["report", "data", "conclusions"].forEach(t => {
-      document.getElementById("tab-" + t).style.display = t === name ? "" : "none";
-    });
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-  }
-
-  function toggleMetric(k) {
-    visible[k] = !visible[k];
-    render();
-  }
-
-  function render() {
-    renderCards();
-    renderChart();
-    renderMetricGrid();
-    renderTable();
-    renderLegend();
-  }
-
-  function renderCards() {
-    const el = document.getElementById("cards");
-    el.innerHTML = METRICS.map(k => {
-      const vals = data.map(d => d[k]);
-      const latest = vals[vals.length - 1];
-      const diff = latest - vals[0];
-      const good = diff < 0;
-      return `<button class="card ${visible[k] ? '' : 'dimmed'}"
-        style="border: 2px solid ${visible[k] ? COLORS[k] : '#e5e7eb'}"
-        onclick="toggleMetric('${k}')">
-        <div class="card-key" style="color:${COLORS[k]}">${k}</div>
-        <div class="card-val">${latest}</div>
-        <div class="card-diff" style="color:${good ? '#16a34a' : '#dc2626'}">
-          ${diff >= 0 ? '▲' : '▼'} ${Math.abs(diff)} pts
+    function App() {
+      const [tab, setTab] = useState("report");
+      const today = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+      return (
+        <div style={{ minHeight:"100vh", background:"#f9fafb" }}>
+          <div style={{ background:"#111827", color:"#fff", padding:"24px 32px" }}>
+            <p style={{ fontSize:11, letterSpacing:2, color:"#9ca3af", marginBottom:8, textTransform:"uppercase" }}>Athlete Performance Report</p>
+            <h1 style={{ fontSize:22, fontWeight:700 }}>{ATHLETE_NAME}</h1>
+            <p style={{ fontSize:13, color:"#d1d5db", marginTop:4 }}>{SPORT} &nbsp;·&nbsp; {COACH_NAME}</p>
+            <p style={{ fontSize:11, color:"#6b7280", marginTop:6 }}>{today}</p>
+          </div>
+          <div style={{ maxWidth:860, margin:"0 auto", padding:"32px 24px" }}>
+            <div style={{ display:"flex", gap:4, background:"#e5e7eb", borderRadius:10, padding:4, width:"fit-content", marginBottom:24 }}>
+              {["report","conclusions"].map(t => (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  padding:"8px 18px", borderRadius:8, border:"none", cursor:"pointer", fontSize:13, fontWeight:500,
+                  background: tab===t ? "#fff" : "transparent", color: tab===t ? "#111827" : "#6b7280",
+                  boxShadow: tab===t ? "0 1px 4px rgba(0,0,0,0.1)" : "none"
+                }}>
+                  {t === "conclusions" ? "✦ Conclusions" : "Report"}
+                </button>
+              ))}
+            </div>
+            {tab === "report" && (
+              <div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(160px, 1fr))", gap:12, marginBottom:24 }}>
+                  {Object.entries(METRIC_INFO).map(([k]) => {
+                    const vals = DATA.map(d => d[k]);
+                    const latest = vals[vals.length-1];
+                    const diff = latest - vals[0];
+                    return (
+                      <div key={k} style={{ background:"#fff", border:"2px solid "+COLORS[k], borderRadius:12, padding:"14px 16px" }}>
+                        <div style={{ fontSize:11, fontWeight:700, color:COLORS[k], marginBottom:4 }}>{k}</div>
+                        <div style={{ fontSize:24, fontWeight:700, color:"#111827" }}>{latest}</div>
+                        <div style={{ fontSize:12, fontWeight:600, color: diff<0 ? "#16a34a" : "#dc2626" }}>
+                          {diff >= 0 ? "▲" : "▼"} {Math.abs(diff)} pts
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ background:"#fff", borderRadius:12, border:"1px solid #e5e7eb", padding:24, marginBottom:20 }}>
+                  <p style={{ fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:1, marginBottom:16 }}>Score Trends Over Time</p>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={DATA} margin={{ top:5, right:20, left:0, bottom:5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="month" tick={{ fontSize:12 }} />
+                      <YAxis domain={[0,100]} tick={{ fontSize:12 }} />
+                      <Tooltip contentStyle={{ borderRadius:8, fontSize:13 }} />
+                      <Legend />
+                      <ReferenceLine y={50} stroke="#d1d5db" strokeDasharray="4 4" />
+                      {Object.keys(METRIC_INFO).map(k => (
+                        <Line key={k} type="monotone" dataKey={k} stroke={COLORS[k]} strokeWidth={2.5} dot={{ r:4 }} activeDot={{ r:6 }} />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                  <p style={{ fontSize:11, color:"#9ca3af", fontStyle:"italic", marginTop:8 }}>* All scores: lower = better performance</p>
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(200px, 1fr))", gap:12 }}>
+                  {Object.entries(METRIC_INFO).map(([k,{label,desc}]) => (
+                    <div key={k} style={{ background:"#fff", borderRadius:10, border:"1px solid #e5e7eb", padding:14, display:"flex", gap:10 }}>
+                      <div style={{ width:3, borderRadius:4, background:COLORS[k], flexShrink:0 }} />
+                      <div>
+                        <div style={{ fontSize:10, fontWeight:700, color:COLORS[k], textTransform:"uppercase" }}>{k}</div>
+                        <div style={{ fontSize:13, fontWeight:600, color:"#111827", margin:"2px 0" }}>{label}</div>
+                        <div style={{ fontSize:11, color:"#6b7280" }}>{desc}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {tab === "conclusions" && (
+              <div style={{ background:"#fff", borderRadius:12, border:"1px solid #e5e7eb", padding:24 }}>
+                <p style={{ fontSize:11, fontWeight:600, color:"#9ca3af", textTransform:"uppercase", letterSpacing:1, marginBottom:16 }}>Conclusions</p>
+                <div style={{ fontSize:14, color:"#374151", lineHeight:1.8, whiteSpace:"pre-line" }}>{CONCLUSIONS}</div>
+              </div>
+            )}
+          </div>
         </div>
-      </button>`;
-    }).join("");
-  }
-
-  function renderLegend() {
-    const el = document.getElementById("legend");
-    el.innerHTML = METRICS.map(k => `
-      <div class="legend-item" onclick="toggleMetric('${k}')" style="opacity:${visible[k] ? 1 : 0.4}">
-        <div class="legend-line" style="background:${COLORS[k]}"></div>
-        <span>${k}</span>
-      </div>`).join("");
-  }
-
-  function renderChart() {
-    const svg = document.getElementById("chartSvg");
-    const W = 800, H = 280;
-    const padL = 36, padR = 20, padT = 16, padB = 36;
-    const n = data.length;
-    const xStep = (W - padL - padR) / Math.max(n - 1, 1);
-
-    const toX = i => padL + i * xStep;
-    const toY = v => padT + (1 - v / 100) * (H - padT - padB);
-
-    let html = "";
-
-    // Grid lines
-    [0, 25, 50, 75, 100].forEach(v => {
-      const y = toY(v);
-      const dash = v === 50 ? "6,4" : "3,3";
-      html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}"
-        stroke="${v === 50 ? '#d1d5db' : '#f0f0f0'}" stroke-dasharray="${dash}" stroke-width="1"/>`;
-      html += `<text x="${padL - 6}" y="${y + 4}" font-size="10" fill="#9ca3af" text-anchor="end">${v}</text>`;
-    });
-
-    // X labels
-    data.forEach((d, i) => {
-      html += `<text x="${toX(i)}" y="${H - 4}" font-size="10" fill="#9ca3af" text-anchor="middle">${d.month}</text>`;
-    });
-
-    // Lines + dots
-    METRICS.forEach(k => {
-      if (!visible[k]) return;
-      const pts = data.map((d, i) => `${toX(i)},${toY(d[k])}`).join(" ");
-      html += `<polyline points="${pts}" fill="none" stroke="${COLORS[k]}" stroke-width="2.5" stroke-linejoin="round"/>`;
-      data.forEach((d, i) => {
-        html += `<circle cx="${toX(i)}" cy="${toY(d[k])}" r="4" fill="${COLORS[k]}"/>`;
-      });
-    });
-
-    svg.innerHTML = html;
-  }
-
-  function renderMetricGrid() {
-    const el = document.getElementById("metricGrid");
-    el.innerHTML = METRICS.map(k => `
-      <div class="metric-card">
-        <div class="metric-bar" style="background:${COLORS[k]}"></div>
-        <div>
-          <div class="metric-key" style="color:${COLORS[k]}">${k}</div>
-          <div class="metric-name">${METRIC_INFO[k].label}</div>
-          <div class="metric-desc">${METRIC_INFO[k].desc}</div>
-        </div>
-      </div>`).join("");
-  }
-
-  function renderTable() {
-    const t = document.getElementById("dataTable");
-    const headers = `<thead><tr>
-      <th>Period</th>
-      ${METRICS.map(k => `<th style="color:${COLORS[k]}">${k}</th>`).join("")}
-    </tr></thead>`;
-    const rows = data.map((row, i) => `<tr>
-      <td><input value="${row.month}" onchange="updateMonth(${i}, this.value)"/></td>
-      ${METRICS.map(k => `<td><input type="number" min="0" max="100" value="${row[k]}"
-        onchange="updateCell(${i}, '${k}', this.value)"/></td>`).join("")}
-    </tr>`).join("");
-    t.innerHTML = headers + "<tbody>" + rows + "</tbody>";
-  }
-
-  function updateMonth(i, val) {
-    data[i].month = val;
-    renderChart();
-    renderCards();
-    renderTable();
-  }
-
-  function updateCell(i, k, val) {
-    data[i][k] = Math.min(100, Math.max(0, Number(val) || 0));
-    renderChart();
-    renderCards();
-  }
-
-  function addPeriod() {
-    data.push({ month: `Month ${data.length + 1}`, PIS: 50, PSS: 50, RAS: 50, CPTS: 50 });
-    render();
-  }
-
-  function removePeriod() {
-    if (data.length > 1) { data.pop(); render(); }
-  }
-
-  async function generateConclusions() {
-    const btn = document.getElementById("genBtn");
-    const errEl = document.getElementById("concError");
-    const textEl = document.getElementById("concText");
-    btn.disabled = true;
-    btn.textContent = "Generating…";
-    errEl.style.display = "none";
-    textEl.style.display = "none";
-
-    const athleteName = document.getElementById("athleteName").value;
-    const sport = document.getElementById("sport").value;
-    const coachName = document.getElementById("coachName").value;
-
-    const metricSummary = METRICS.map(k => {
-      const vals = data.map(d => d[k]);
-      const diff = vals[vals.length - 1] - vals[0];
-      const dir = diff > 0 ? "increased" : diff < 0 ? "decreased" : "remained stable";
-      return `- ${METRIC_INFO[k].label} (${k}): ${vals[0]} → ${vals[vals.length-1]} (${dir} by ${Math.abs(diff)} pts).`;
-    }).join("\n");
-
-    const prompt = `You are a sports performance analyst writing a report conclusion for a coach.
-
-Athlete: ${athleteName} | Sport: ${sport} | Coach: ${coachName}
-Period: ${data[0].month} to ${data[data.length-1].month} (${data.length} sessions)
-
-Score trends (0–100, lower = better for all):
-${metricSummary}
-
-Write a professional 4–5 paragraph conclusion for the coach covering: overall trend, strongest growth area, area needing attention, relationships between scores, and a forward-looking recommendation. Warm but professional tone.`;
-
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": "YOUR_API_KEY_HERE", // <-- Replace with your Anthropic API key
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
-      const json = await res.json();
-      const text = (json.content || []).map(b => b.text || "").join("\n").trim();
-      if (!text) throw new Error("Empty");
-      textEl.textContent = text;
-      textEl.style.display = "block";
-      btn.textContent = "↺ Regenerate";
-    } catch (e) {
-      errEl.textContent = "Could not generate conclusions. Please check your API key and try again.";
-      errEl.style.display = "block";
-      btn.textContent = "✦ Generate Conclusions";
+      );
     }
-    btn.disabled = false;
-  }
-
-  render();
-</script>
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
 </body>
 </html>
